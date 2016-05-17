@@ -10,9 +10,11 @@ import serial, time
 
 class Spectrometer():
     '''Class to interface with a Jenway 6305 spectrometer'''
-    def __init__(self, serialport=None, **kwarg):
+    def __init__(self, serialport='/dev/ttyAMA0', **kwarg):
         if serial:
             self.port = serialport
+            self.sleepinterval=0.1
+            self.shutter=None
             self.serial = serial.Serial(self.port, 
                                         baudrate = 1200, 
                                         bytesize = 7, 
@@ -23,12 +25,19 @@ class Spectrometer():
         else:
             raise Exception("A serial port must be specified")
         
-        
-            
+    def set_shutter(self, isopen=True):
+        if self.shutter == None or self.shutter != isopen:
+            if isopen == True:
+                self.serial.write(b'SO\r')
+            else:
+                self.serial.write(b'SC\r')
+            self.shutter = isopen
+            time.sleep(self.sleepinterval)     
+                
     def printout(self):
         '''equivlaent to pressing the PRINT key on the spec.
         Return is the output text'''
-        self.serial.write(b'D\n')
+        self.serial.write(b'D\r')
         output=''
         line = self.serial.readline()
         while line:
@@ -39,32 +48,33 @@ class Spectrometer():
     def transmission(self):
         '''retrieves transmission information from the spec
         Return is a tuple (transmission, wavelength)'''
-        self.serial.write(b'SO\n')
-        self.serial.write(b'T\n')
+        self.set_shutter(True)
+        time.sleep(0.1)
+        self.serial.write(b'T\r')
         vals = self.serial.readline().strip().split('\t')
         return (float(vals[0]), int(vals[1]))
         
     def absorbance(self):
         '''retrieves absorbance information from the spec
         Return is a tuple (absorbance, wavelength)'''
-        self.serial.write(b'SO\n')
-        self.serial.write(b'A\n')
+        self.set_shutter(True)
+        self.serial.write(b'A\r')
         vals = self.serial.readline().strip().split('\t')
         return (float(vals[0]), int(vals[1]))
         
     def concentration(self):
         '''retrieves concentration information from the spec
         Return is a tuple (concentration, wavelength)'''
-        self.serial.write(b'SO\n')
-        self.serial.write(b'C\n')
+        self.set_shutter(True)
+        self.serial.write(b'C\r')
         vals = self.serial.readline().strip().split('\t')
         return (float(vals[0]), int(vals[1]))
         
     def voltage(self):
         '''retrieves voltage information from the spec
         Return is a tuple (voltage, wavelength)'''
-        self.serial.write(b'SO\n')
-        self.serial.write(b'V\n')
+        self.set_shutter(True)
+        self.serial.write(b'V\r')
         vals = self.serial.readline().strip().split('\t')
         return (float(vals[0]), int(vals[1]))
         
@@ -72,12 +82,13 @@ class Spectrometer():
         '''set a zero value for absorbance (trans = False) or
         transmission (trans = True)'''
         if trans:
-            self.serial.write(b'SC\n')
+            self.set_shutter(False)
         else:
-            self.serial.write(b'SO\n')
-        self.serial.write(b'Z\n')
-        time.sleep(1)
-        self.serial.write(b'SO\n')
+            self.set_shutter(True)
+        time.sleep(self.sleepinterval)
+        self.serial.write(b'Z\r')
+        time.sleep(self.sleepinterval)
+        self.set_shutter(True)
         
         
     def set_wavelength(self, wavelength=540):
@@ -85,13 +96,14 @@ class Spectrometer():
         wavelentgth = <integer>'''
         if wavelength <198 or wavelength > 1000:
             raise Exception('invalid wavelength')
-        self.serial.write(b'G%i\n'%wavelength)
-        
+        self.serial.write(b'G%i\r'%wavelength)
+        time.sleep(self.sleepinterval)
         
     def set_conc_factor(self, factor=1):
         '''Sets the concentration factor for the spec to automatically
         determine concentration from absorbance'''
-        self.serial.write(b'F%i\n'%factor)
+        self.serial.write(b'F%i\r'%factor)
+        time.sleep(self.sleepinterval)
     
     def scan(self, start=198, end=1000, interval=10):
         '''Performs an absorbance scan starting at start,
@@ -99,14 +111,10 @@ class Spectrometer():
         Returns an array of (abs, wavelength) tuples'''
         data=[]
         for wl in range(start, end, interval):
+            self.set_wavelength(wl)
             data.append(self.absorbance)
         return data
 
-    def timeseries(self, reads=1, delay=0, file=None):
-        '''takes reads measurements of absorbance spaced delay seconds apart.
-        If file is specified then opens and writes data to that file, 
-        otherwise returns data as an array of tuples of 
-        (time, absorbance, wavelength)'''
-        
+
         
     
