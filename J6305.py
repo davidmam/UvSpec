@@ -42,7 +42,7 @@ class Spectrometer():
         line = self.serial.readline()
         while line:
             output += line
-            line = self.serial.readline()
+            line = self.serial.readline().decode('ascii')
         return output
 
     def transmission(self):
@@ -51,7 +51,7 @@ class Spectrometer():
         self.set_shutter(True)
         time.sleep(0.1)
         self.serial.write(b'T\r')
-        vals = self.serial.readline().strip().split('\t')
+        vals = self.serial.readline().decode('ascii').strip().split('\t')
         return (float(vals[0]), int(vals[1]))
         
     def absorbance(self):
@@ -59,7 +59,7 @@ class Spectrometer():
         Return is a tuple (absorbance, wavelength)'''
         self.set_shutter(True)
         self.serial.write(b'A\r')
-        vals = self.serial.readline().strip().split('\t')
+        vals = self.serial.readline().decode('ascii').strip().split('\t')
         return (float(vals[0]), int(vals[1]))
         
     def concentration(self):
@@ -67,7 +67,7 @@ class Spectrometer():
         Return is a tuple (concentration, wavelength)'''
         self.set_shutter(True)
         self.serial.write(b'C\r')
-        vals = self.serial.readline().strip().split('\t')
+        vals = self.serial.readline().decode('ascii').strip().split('\t')
         return (float(vals[0]), int(vals[1]))
         
     def voltage(self):
@@ -75,7 +75,7 @@ class Spectrometer():
         Return is a tuple (voltage, wavelength)'''
         self.set_shutter(True)
         self.serial.write(b'V\r')
-        vals = self.serial.readline().strip().split('\t')
+        vals = self.serial.readline().decode('ascii').strip().split('\t')
         return (float(vals[0]), int(vals[1]))
         
     def calibrate(self, trans=False):
@@ -116,7 +116,10 @@ class Spectrometer():
             self.set_wavelength(wl)
             data.append(self.absorbance())
         return data
-
+        
+    def scan_to_file(filename,**kwarg):
+        '''performs a scan saving the data in the file stated'''
+        
 
         
     
