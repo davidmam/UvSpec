@@ -114,7 +114,7 @@ class Spectrometer():
         data=[]
         for wl in range(start, end, interval):
             self.set_wavelength(wl)
-            data.append(self.absorbance)
+            data.append(self.absorbance())
         return data
 
 
