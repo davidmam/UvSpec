@@ -96,13 +96,15 @@ class Spectrometer():
         wavelentgth = <integer>'''
         if wavelength <198 or wavelength > 1000:
             raise Exception('invalid wavelength')
-        self.serial.write(b'G%i\r'%wavelength)
+        comm = 'G%i\r'%wavelength
+        self.serial.write(bytes(comm, 'ascii'))
         time.sleep(self.sleepinterval)
         
     def set_conc_factor(self, factor=1):
         '''Sets the concentration factor for the spec to automatically
         determine concentration from absorbance'''
-        self.serial.write(b'F%i\r'%factor)
+        comm = 'F%i\r'%factor
+        self.serial.write(bytes(comm, 'ascii'))
         time.sleep(self.sleepinterval)
     
     def scan(self, start=198, end=1000, interval=10):
