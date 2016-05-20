@@ -27,7 +27,7 @@ class Spectrometer():
             self.wavelength = wl
         else:
             raise Exception("A serial port must be specified")
-    def pause(pausetime):
+    def pause(self,pausetime):
         '''explicit pause loop that doesn't suffer from the interrupts that 
         time.sleep() does'''
         starttime = time.time()
