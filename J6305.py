@@ -73,7 +73,7 @@ class Spectrometer():
         self.set_shutter(True)
         self.serial.write(b'A\r')
         vals = self.serial.readline().decode('ascii').strip().split('\t')
-        self.wavelength = vals[1]
+        self.wavelength = int(vals[1])
         return (float(vals[0]), int(vals[1]))
         
     def concentration(self):
@@ -82,7 +82,7 @@ class Spectrometer():
         self.set_shutter(True)
         self.serial.write(b'C\r')
         vals = self.serial.readline().decode('ascii').strip().split('\t')
-        self.wavelength = vals[1]
+        self.wavelength = int(vals[1])
         return (float(vals[0]), int(vals[1]))
         
     def voltage(self):
@@ -91,7 +91,7 @@ class Spectrometer():
         self.set_shutter(True)
         self.serial.write(b'V\r')
         vals = self.serial.readline().decode('ascii').strip().split('\t')
-        self.wavelength = vals[1]
+        self.wavelength = int(vals[1])
         return (float(vals[0]), int(vals[1]))
         
     def calibrate(self, trans=False):
@@ -115,7 +115,6 @@ class Spectrometer():
         if wavelen <198 or wavelen > 1000:
             raise Exception('invalid wavelength')
         comm = 'G%i\r'%wavelen
-        self.wavelength = wavelen
         self.serial.write(bytes(comm, 'ascii'))
         self.pause(self.sleepinterval + self.sleepinterval * \
                     abs(self.wavelength - wavelen) * 0.05)
@@ -142,7 +141,7 @@ class Spectrometer():
             data.append(self.absorbance())
         return data
         
-    def scan_to_file(filename,**kwarg):
+    def scan_to_file(self,filename,**kwarg):
         '''performs a scan saving the data in the file stated'''
         ofh=open(filename,'w')
         scans=self.scan(**kwarg)
