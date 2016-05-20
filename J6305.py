@@ -27,6 +27,15 @@ class Spectrometer():
             self.wavelength = wl
         else:
             raise Exception("A serial port must be specified")
+    def pause(pausetime):
+        '''explicit pause loop that doesn't suffer from the interrupts that 
+        time.sleep() does'''
+        starttime = time.time()
+        endtime=time.time()  
+        while endtime - starttime < pausetime:
+            time.sleep(pausetime - endtime +starttime)
+            endtime=time.time()
+        return
         
     def set_shutter(self, isopen=True):
         if self.shutter == None or self.shutter != isopen:
@@ -35,7 +44,7 @@ class Spectrometer():
             else:
                 self.serial.write(b'SC\r')
             self.shutter = isopen
-            time.sleep(self.sleepinterval)     
+            self.pause(self.sleepinterval)     
                 
     def printout(self):
         '''equivlaent to pressing the PRINT key on the spec.
@@ -52,7 +61,7 @@ class Spectrometer():
         '''retrieves transmission information from the spec
         Return is a tuple (transmission, wavelength)'''
         self.set_shutter(True)
-        time.sleep(0.1)
+        self.pause(0.1)
         self.serial.write(b'T\r')
         vals = self.serial.readline().decode('ascii').strip().split('\t')
         self.wavelength = vals[1]
@@ -92,11 +101,11 @@ class Spectrometer():
             self.set_shutter(False)
         else:
             self.set_shutter(True)
-        time.sleep(self.sleepinterval)
+        self.pause(self.sleepinterval)
         self.serial.write(b'Z\r')
-        time.sleep(self.sleepinterval)
+        self.pause(self.sleepinterval)
         self.set_shutter(True)
-        time.sleep(self.sleepinterval)
+        self.pause(self.sleepinterval)
         return True
         
         
@@ -108,7 +117,8 @@ class Spectrometer():
         comm = 'G%i\r'%wavelen
         self.wavelength = wavelen
         self.serial.write(bytes(comm, 'ascii'))
-        time.sleep(self.sleepinterval * abs(self.wavelength - wavelen) * 0.05)
+        self.pause(self.sleepinterval + self.sleepinterval * \
+                    abs(self.wavelength - wavelen) * 0.05)
         self.wavelength = wavelen
         return wavelen
         
@@ -117,7 +127,7 @@ class Spectrometer():
         determine concentration from absorbance'''
         comm = 'F%i\r'%factor
         self.serial.write(bytes(comm, 'ascii'))
-        time.sleep(self.sleepinterval)
+        self.pause(self.sleepinterval)
         return factor
     
     def scan(self, start=198, end=1000, interval=10):
@@ -126,7 +136,7 @@ class Spectrometer():
         Returns an array of (abs, wavelength) tuples'''
         data=[]
         self.set_wavelength(start)
-        time.sleep(2)
+        self.pause(2)
         for wl in range(start, end, interval):
             self.set_wavelength(wl)
             data.append(self.absorbance())
