@@ -96,6 +96,8 @@ class Spectrometer():
         self.serial.write(b'Z\r')
         time.sleep(self.sleepinterval)
         self.set_shutter(True)
+        time.sleep(self.sleepinterval)
+        return True
         
         
     def set_wavelength(self, wavelen=540):
@@ -108,6 +110,7 @@ class Spectrometer():
         self.serial.write(bytes(comm, 'ascii'))
         time.sleep(self.sleepinterval * abs(self.wavelength - wavelen) * 0.05)
         self.wavelength = wavelen
+        return wavelen
         
     def set_conc_factor(self, factor=1):
         '''Sets the concentration factor for the spec to automatically
@@ -115,6 +118,7 @@ class Spectrometer():
         comm = 'F%i\r'%factor
         self.serial.write(bytes(comm, 'ascii'))
         time.sleep(self.sleepinterval)
+        return factor
     
     def scan(self, start=198, end=1000, interval=10):
         '''Performs an absorbance scan starting at start,
