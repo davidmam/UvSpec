@@ -130,6 +130,12 @@ class Spectrometer():
         
     def scan_to_file(filename,**kwarg):
         '''performs a scan saving the data in the file stated'''
+        ofh=open(filename,'w')
+        scans=self.scan(**kwarg)
+        ofh.write('Abs\tWavelength\n')
+        for s in scans:
+            ofh.write('\t'.join([str(t) for t in s]) + '\n')
+        ofh.close()
         
 
         
