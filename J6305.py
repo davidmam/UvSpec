@@ -13,8 +13,9 @@ class Spectrometer():
     def __init__(self, serialport='/dev/ttyAMA0', **kwarg):
         if serial:
             self.port = serialport
-            self.sleepinterval=0.1
-            self.shutter=None
+            self.sleepinterval = 0.1
+            self.shutter = None
+            self.wavelength = None
             self.serial = serial.Serial(self.port, 
                                         baudrate = 1200, 
                                         bytesize = 7, 
@@ -52,6 +53,7 @@ class Spectrometer():
         time.sleep(0.1)
         self.serial.write(b'T\r')
         vals = self.serial.readline().decode('ascii').strip().split('\t')
+        self.wavelength = vals[1]
         return (float(vals[0]), int(vals[1]))
         
     def absorbance(self):
@@ -60,6 +62,7 @@ class Spectrometer():
         self.set_shutter(True)
         self.serial.write(b'A\r')
         vals = self.serial.readline().decode('ascii').strip().split('\t')
+        self.wavelength = vals[1]
         return (float(vals[0]), int(vals[1]))
         
     def concentration(self):
@@ -68,6 +71,7 @@ class Spectrometer():
         self.set_shutter(True)
         self.serial.write(b'C\r')
         vals = self.serial.readline().decode('ascii').strip().split('\t')
+        self.wavelength = vals[1]
         return (float(vals[0]), int(vals[1]))
         
     def voltage(self):
@@ -76,6 +80,7 @@ class Spectrometer():
         self.set_shutter(True)
         self.serial.write(b'V\r')
         vals = self.serial.readline().decode('ascii').strip().split('\t')
+        self.wavelength = vals[1]
         return (float(vals[0]), int(vals[1]))
         
     def calibrate(self, trans=False):
@@ -97,8 +102,10 @@ class Spectrometer():
         if wavelength <198 or wavelength > 1000:
             raise Exception('invalid wavelength')
         comm = 'G%i\r'%wavelength
+        self.wavelength = wavelength
         self.serial.write(bytes(comm, 'ascii'))
-        time.sleep(self.sleepinterval)
+        time.sleep(self.sleepinterval * abs(self.wavelength - wavelength) * 0.05)
+        self.wavelength = wavelength
         
     def set_conc_factor(self, factor=1):
         '''Sets the concentration factor for the spec to automatically
@@ -112,6 +119,8 @@ class Spectrometer():
         ending at end, and taking a measurement every interval.
         Returns an array of (abs, wavelength) tuples'''
         data=[]
+        self.set_wavelength(start)
+        time.sleep(2)
         for wl in range(start, end, interval):
             self.set_wavelength(wl)
             data.append(self.absorbance())
