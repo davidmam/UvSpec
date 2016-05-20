@@ -23,6 +23,8 @@ class Spectrometer():
                                         stopbits = 1,
                                         timeout = 1 
                                         )
+            (abs, wl) = self.absorbance()
+            self.wavelength = wl
         else:
             raise Exception("A serial port must be specified")
         
@@ -96,16 +98,16 @@ class Spectrometer():
         self.set_shutter(True)
         
         
-    def set_wavelength(self, wavelength=540):
+    def set_wavelength(self, wavelen=540):
         '''Set the spec to a specific wavelength specified by 
         wavelentgth = <integer>'''
-        if wavelength <198 or wavelength > 1000:
+        if wavelen <198 or wavelen > 1000:
             raise Exception('invalid wavelength')
-        comm = 'G%i\r'%wavelength
-        self.wavelength = wavelength
+        comm = 'G%i\r'%wavelen
+        self.wavelength = wavelen
         self.serial.write(bytes(comm, 'ascii'))
-        time.sleep(self.sleepinterval * abs(self.wavelength - wavelength) * 0.05)
-        self.wavelength = wavelength
+        time.sleep(self.sleepinterval * abs(self.wavelength - wavelen) * 0.05)
+        self.wavelength = wavelen
         
     def set_conc_factor(self, factor=1):
         '''Sets the concentration factor for the spec to automatically
