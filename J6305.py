@@ -138,6 +138,7 @@ class Spectrometer():
         self.pause(2)
         for wl in range(start, end, interval):
             self.set_wavelength(wl)
+            self.pause(1)
             data.append(self.absorbance())
         return data
         
