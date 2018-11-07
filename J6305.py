@@ -85,10 +85,14 @@ class Spectrometer():
         self.wavelength = int(vals[1])
         return (float(vals[0]), int(vals[1]))
         
-    def voltage(self):
+    def voltage(self, luminosity=False):
         '''retrieves voltage information from the spec
-        Return is a tuple (voltage, wavelength)'''
-        self.set_shutter(True)
+        Return is a tuple (voltage, wavelength). If luminosity is True then 
+        turn off the lamp first to measure light emission'''
+        if luminosity:
+            self.set_shutter(False)
+        else:
+            self.set_shutter(True)        
         self.serial.write(b'V\r')
         vals = self.serial.readline().decode('ascii').strip().split('\t')
         self.wavelength = int(vals[1])
@@ -141,6 +145,12 @@ class Spectrometer():
             self.pause(1)
             data.append(self.absorbance())
         return data
+       
+    def luminosity(self):
+        '''Wrapper around voltage() to set luminosity to true. 
+        Measures light on the detector with the lamp off for detecting light emission.
+        returns a tuple (voltage, wavelength)'''
+        return self.voltage(True)
         
     def scan_to_file(self,filename,**kwarg):
         '''performs a scan saving the data in the file stated'''
